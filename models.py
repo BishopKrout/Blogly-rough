@@ -18,9 +18,21 @@ class User(db.Model):
     id = db.Column(db.Integer,
                    primary_key=True,
                    autoincrement=True)
+    username = db.Column(db.string(30), nullable=False, unique=True)
     first_name = db.Column(db.String(15), nullable=False)
     last_name = db.Column(db.String(15), nullable=False)
     image_url = db.Column(db.String(500), nullable=True)
+
+class Post(db.Model):
+    __tablename__ = 'posts'
+
+    id = db.Column(db.Integer,
+                   primary_key=True,
+                   autoincrement=True)
+    title = db.Column(db.String(30), nullable=False)
+    content = db.Column(db.String(280), nullable=False)
+    created_at = db.Column(db.String) 
+    username = db.Column(db.String, db.ForeignKey('users.username'))
 
     
     

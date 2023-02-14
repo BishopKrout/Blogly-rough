@@ -23,6 +23,7 @@ def list_users():
 @app.route('/add_user', methods=["GET","POST"])
 def add_user():
     if request.method == 'POST':    
+        username = request.form['username']
         first_name = request.form['first_name']
         last_name = request.form['last_name']
         image_url = request.form['image_url']
@@ -49,6 +50,7 @@ def show_user(user_id):
 def edit_user(user_id):
     user = User.query.get(user_id)
     if request.method == 'POST':
+        username = request.form['username']
         user.first = request.form['first_name']
         user.last = request.form['last_name']
         user.image = request.form['image_url']
