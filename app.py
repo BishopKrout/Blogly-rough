@@ -1,7 +1,7 @@
 """Blogly application."""
 
 from flask import Flask, request, render_template,  redirect, flash, session, url_for
-from models import db, connect_db, User
+from models import db, connect_db, User, Post
 from flask_debugtoolbar import DebugToolbarExtension
 
 app = Flask(__name__)
@@ -28,11 +28,11 @@ def add_user():
         last_name = request.form['last_name']
         image_url = request.form['image_url']
 
-        if not first_name or not last_name:
-            flash('First name and last name are required fields', 'error')
+        if not first_name or not last_name or not username:
+            flash('Username, First name and last name are required fields', 'error')
             return redirect('/add_user')
 
-        new_user = User(first_name=first_name, last_name=last_name,     image_url=image_url)
+        new_user = User(username=username, first_name=first_name, last_name=last_name,     image_url=image_url)
         db.session.add(new_user)
         db.session.commit()
         flash('User added successfully', 'success')
@@ -42,9 +42,10 @@ def add_user():
 
 @app.route('/<int:user_id>')
 def show_user(user_id):
-
     user = User.query.get_or_404(user_id)
-    return render_template('user.html', user=user)
+    posts = Post.query.filter_by(user_id=user_id).all()
+    return render_template('user.html', user=user, posts=posts)
+
 
 @app.route('/<int:user_id>/edit', methods=['GET','POST'])
 def edit_user(user_id):
@@ -64,3 +65,58 @@ def delete_user(id):
     db.session.delete(user)
     db.session.commit()
     return redirect(url_for('list_users'))
+
+@app.route('/<int:user_id>/add_post', methods=['GET', 'POST'])
+def add_post(user_id):
+    user = User.query.get(user_id)
+    if request.method == 'POST':    
+        title = request.form['title']
+        content = request.form['content']
+        created_at = request.form['created_at']
+
+        if not title or not content or not created_at:
+            flash('Post must have title and content', 'error')
+            return redirect(url_for('show_user', user_id=user_id))
+
+        new_post = Post(title=title, content=content, created_at=created_at, user_id=user_id)
+        db.session.add(new_post)
+        db.session.commit()
+        flash('Post added successfully', 'success')
+        return redirect(url_for('show_user', user_id=user_id))
+
+    return render_template("add_post.html", user=user)
+
+@app.route('/<int:user_id>/<int:post_id>')
+def show_post(user_id, post_id):
+    user = User.query.get(user_id)
+    post = Post.query.get(post_id)
+    return render_template('post.html', user=user, post=post)
+
+@app.route('/<int:user_id>/edit_post/<int:post_id>', methods=['GET', 'POST'])
+def edit_post(user_id, post_id):
+    user = User.query.get_or_404(user_id)
+    post = Post.query.get_or_404(post_id)
+
+    if request.method == 'POST':
+        post.title = request.form['title']
+        post.content = request.form['content']
+        post.created_at = request.form['created_at']
+
+        if not post.title or not post.content or not post.created_at:
+            flash('Post must have title and content', 'error')
+            return redirect(url_for('show_user', user_id=user_id))
+
+        db.session.commit()
+        flash('Post updated successfully', 'success')
+        return redirect(url_for('show_user', user_id=user_id))
+
+    return render_template("edit_post.html", user=user, post=post)
+
+
+@app.route('/delete_post/<int:post_id>', methods=["POST"])
+def delete_post(post_id):
+    post = Post.query.get_or_404(post_id)
+    user_id = post.user_id
+    db.session.delete(post)
+    db.session.commit()
+    return redirect(url_for('show_user', user_id=user_id))

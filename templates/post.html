@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ post.title }}</title>
+</head>
+<body>
+    <h1>{{ post.title }}</h1>
+    <p>{{ post.content }}</p>
+    <p>By {{ user.username }} </p>
+
+    <button><a href="{{ url_for('edit_post', user_id=user.id, post_id=post.id) }}" class="btn btn-primary">Edit Post</a></button>
+
+    <form action="{{ url_for('delete_post', user_id=user.id, post_id=post.id) }}" method="POST">
+      <input type="submit" value="Delete">
+    </form>    
+    <div>
+        <button><a href="{{ url_for('list_users') }}" class="btn btn-primary">Return Home</a></button>
+      </div>
+    
+</body>
+</html>
